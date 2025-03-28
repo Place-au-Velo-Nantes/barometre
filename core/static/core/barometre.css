@@ -1,0 +1,52 @@
+4/* Please follow as much as possible these guidelines :
+    https://developer.mozilla.org/en-US/docs/MDN/Guidelines/Code_guidelines/CSS
+*/
+
+body,
+html {
+    height: 100%;
+    margin: 0;
+    font-family: Lato,open sans,Helvetica Neue,Helvetica,Roboto,Arial,sans-serif;
+    overflow-x: hidden;
+}
+a {
+    color: #007bff;
+    text-decoration: underline;
+}
+a:link {
+    color: #007bff;
+    text-decoration: underline;
+}
+a:visited {
+    color: #007bff;
+    text-decoration: underline;
+}
+a:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+a:active {
+    color: #4456b3;
+    text-decoration: underline;
+}
+a.subtle {
+    color: #000000;		/* No special colour. */
+    text-decoration: none;	/* No underline to links. */
+}
+.nav-item {
+    white-space: nowrap;
+}
+.hero {
+    position: relative;
+    /* background-image: url('path/to/your/image.jpg'); */
+    /* background-size: cover; */
+    /* background-position: center; */
+    height: 100vh;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.hero-text {
+    text-align: center;
+}
