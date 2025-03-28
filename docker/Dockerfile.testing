@@ -1,0 +1,19 @@
+FROM python:3.10-slim
+
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
+WORKDIR /app
+RUN useradd -ms /bin/bash dev
+RUN chown -R dev:dev /app
+
+USER dev
+COPY requirements.txt /app/
+RUN python3 -m venv /home/dev/venv && . /home/dev/venv/bin/activate && pip install --upgrade pip && pip install -r /app/requirements.txt
+
+# Adding npm is ridiculously heavy, so only do this in the test
+# Dockerfile.
+# RUN apt-get update && apt-get install -y npm
+
+# Note that I'll mount a volume during dev so that I see updates.
+COPY . /app/

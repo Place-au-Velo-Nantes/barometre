@@ -1,0 +1,158 @@
+{% load static %}
+{% load compress %}
+{# Copyright 2025  Place au Vélo #}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>{% block title %}Baromètre Vélo{% endblock %}</title>
+
+	{% block styles %}
+	{# Google fonts #}
+	<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Open+Sans:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+	{# Bootstrap CSS #}
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
+  {# Font Awesome #}
+  <script src="https://kit.fontawesome.com/4f956afdec.js" crossorigin="anonymous"></script>
+
+  {% compress css %}
+  <link rel="stylesheet" href="{% static 'core/barometre.css' %}">
+  {% block localcss %}{% endblock localcss %}
+  {% endcompress %}
+  {% endblock styles %}
+  {% block js %}
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+  {% compress js %}
+  {% endcompress %}
+  {% endblock js %}
+
+</head>
+<body>
+    {% if role == 'dev' %} <span style="background-color: #880000;">&nbsp; DEV - DEV - DEV - DEV &nbsp; &nbsp; DEV - DEV - DEV - DEV &nbsp; </span>
+    {% elif role == 'staging' or role == 'qa' %}<span style="background-color: #FF0000">&nbsp; TEST - QA - TEST - QA &nbsp;&nbsp; TEST - QA - TEST - QA &nbsp;</span>
+    {# {% elif not is_production %}<span style="background-color: #FF0000">&nbsp; This is not the real site. &nbsp; </span> #}
+    {% endif %}
+
+    {% block navbar %}
+    <nav class="navbar navbar-expand-sm navbar-light bg-light">
+	<div class="d-flex logo-menu-holder">
+            <!-- Brand -->
+            <a class="navbar-brand navbar-logo subtle p-3" href="{% url 'core:home' %}">
+		<img class="navbar-logo-image mr-3 ml-lg-0 logo" style="max-width:auto; height: 50px;" src="{% static 'core/pav-log.png' %}" alt="Place au Vélo logo"> &nbsp; {% block product_name %}{% endblock %}<b>Place au Vélo</b></a>
+		<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+		    <span class="navbar-toggler-icon"></span>
+		</button>
+	</div>
+	{% if user.is_authenticated %}
+	<div class="collapse navbar-collapse navbars" id="navbarNav">
+	    <p>
+		{% if user.is_staff %}I am staff.<br>{% endif %}
+		{% if user.is_manager %}I am a manager.<br>{% endif %}
+		{% if user.is_superuser %}I am a superuser.{% endif %}
+	    </p>
+            <ul class="navbar-nav ms-auto">
+		<li class="nav-item">
+                    <a class="nav-link pr-5" href="{% url 'authentication:logout' %}" aria-label="Logout" method="post">
+			<i class="fa-solid fa-right-from-bracket fa-2xl"></i>
+                    </a>
+		</li>
+            </ul>
+	</div>
+	{% else %}
+	{% comment %}
+	<ul class="navbar-nav ms-auto d-flex flex-column align-items-end">
+            <li class="nav-item">
+                <a class="btn btn-green subtle me-5 p-3" href="{% url 'authentication:login' %}?next=/tlc/" role="button">
+                    Sign in or create your account{# Create account #}
+                </a>
+            </li>
+            <li class="nav-item">
+		<span class="text-muted">
+		    Have an account?
+		</span>
+		<a class="nav-link d-inline me-5 p-3" href="{% url 'authentication:login' %}?next=/tlc/">
+		    Sign in
+                </a>
+            </li>
+        </ul>{% endcomment %}
+	{% endif %}
+     </nav>
+    {% endblock navbar %}
+
+
+<main>
+    {% block hero %}
+    {% if hero_image %}
+    <div><img class="img-fluid" src="{% static hero_image %}" alt="Hero image"></div>
+    </div>
+    {% endif %}
+    <div class="container-fluid">
+	{% if hero_title %}
+	<h1 class="display-4 text-center">{{ hero_title }}</h1>
+	{% endif %}
+    </div>
+    {% endblock %}
+    {% block content_wrapper %} {# In case we don't want standard indents. #}
+    <div class="container-fluid pt-5">
+	{% block content %}
+	{% endblock %}
+    </div>
+    {% block footer %}
+    <footer class="text-center text-lg-start my-3">
+	{% comment %}
+	<div class="footer-social py-3">
+	    <div class="social text-center">
+		{# <a href="https://www.linkedin.com/.../"><i class="fab fa-linkedin fa-xl"></i></a>
+		&nbsp; #}
+		<a href="https://www.instagram.com/placeauvelonantes/"><i class="fab fa-instagram fa-xl"></i></a>
+		&nbsp;
+		{# <a href="https://twitter.com/.../"><i class="fab fa-twitter"></i></a> #}
+		<a href="https://www.facebook.com/place.auvelo/"><i class="fab fa-facebook fa-xl"></i></a>
+	    </div>
+	</div>
+	{% endcomment %}
+    </footer>
+    <footer class="text-center text-lg-start my-3 bg-dark">
+	{% comment %}
+	<div class="container pt-4 pb-0">
+	    <div class="row justify-content-center">
+		<p class="legal text-center">
+		    <!-- <a href="/contact_messages/new">Contact Us (coming soon)</a> -->&nbsp;
+		    {% block extra_footer_links %}{% endblock %}
+		</p>
+	    </div>
+	</div>
+	{% endcomment %}
+	{% comment %}
+	<div class="container-fluid pb-3">
+	    <div class="row justify-content-center">
+		<p class="legal text-center">
+		    <small>
+			<a href="{% url 'core:tos' %}">terms of service</a> |
+			<a href="{% url 'core:privacy' %}">privacy</a> |
+			<a href="{% url 'core:about' %}">about</a>
+		    </small>
+		  </p>
+	    </div>
+	</div>
+	{% endcomment %}
+    </footer>
+    {% endblock footer %}
+
+    {% block scripts %} {# jQuery library #}
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    {# Popper JS #}
+    {# <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script> #}
+    {% comment %} -- This is above, no?
+    {# Latest compiled JavaScript #}
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    {% endcomment %}
+    {% endblock scripts %}
+    {% compress js %}{% block localscripts %}{% endblock localscripts %}{% endcompress %}
+    {% block local_uncached_scripts %}{% endblock local_uncached_scripts %}
+    {% endblock content_wrapper %}
+    </main>
+</body>
+</html>

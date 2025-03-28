@@ -1,0 +1,98 @@
+services:
+  barometre_web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: barometre_web
+    command: >
+      sh -c "
+      . /home/dev/venv/bin/activate &&
+      python manage.py migrate &&
+      python manage.py runserver 0.0.0.0:8200"
+    volumes:
+      - ..:/app
+    ports:
+      - "8200:8200"
+    env_file:
+      - ../.env
+    environment:
+      CELERY_BROKER_URL: "amqp://guest:guest@barometre_rabbitmq:5672//"
+    network_mode: host
+
+  barometre_celery_worker:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: barometre_celery_worker
+    command: >
+      sh -c "
+      . /home/dev/venv/bin/activate &&
+      celery --no-color -A barometre worker -l INFO"
+    volumes:
+      - ..:/app
+    env_file:
+      - ../.env
+    environment:
+      CELERY_BROKER_URL: "amqp://guest:guest@barometre_rabbitmq:5672//"
+    depends_on:
+      - barometre_rabbitmq
+
+  barometre_celery_beat:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: barometre_celery_beat
+    command:  >
+      sh -c "
+      . /home/dev/venv/bin/activate &&
+      celery --no-color -A barometre beat -l INFO"
+    volumes:
+      - ..:/app
+    env_file:
+      - ../.env
+    environment:
+      CELERY_BROKER_URL: "amqp://guest:guest@barometre_rabbitmq:5672//"
+    depends_on:
+      - barometre_rabbitmq
+
+  barometre_rabbitmq:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.rabbitmq
+    image: barometre_rabbitmq
+    volumes:
+      - ..:/app
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_NODE_IP_ADDRESS=0.0.0.0
+
+  barometre_test:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.testing
+    image: barometre_test
+    command: >
+      sh -c "
+      . /home/dev/venv/bin/activate &&
+      rm -f */flycheck_*.py &&
+      black --check --verbose --line-length 79 --extend-exclude 'migrations|media|__pycache__|node_modules|venv' . &&
+      flake8 --exclude=__pycache__,migrations,media,node_modules,venv &&
+      python3 manage.py migrate &&
+      python3 -Wa manage.py test \"$@\" &&
+      true"
+    volumes:
+      - ..:/app
+    env_file:
+      - ../.env
+
+  argtest:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    entrypoint: >
+      sh -c ./argtest.sh "$@"
+    volumes:
+      - ..:/app
+
+
