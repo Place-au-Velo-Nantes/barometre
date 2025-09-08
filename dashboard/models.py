@@ -31,6 +31,22 @@ class MapPoint(models.Model):
     epci = models.CharField(max_length=12)
     departement = models.CharField(max_length=3)
     region = models.CharField(max_length=3)
+    import_id = models.CharField(max_length=16, default="")
+    import_filename = models.CharField(max_length=255, default="")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "year",
+                    "map_name",
+                    "longitude",
+                    "latitude",
+                    "commune",
+                ],
+                name="unique_mappoint",
+            )
+        ]
 
 
 class Commune(models.Model):
