@@ -23,7 +23,7 @@ from unittest.mock import patch
 
 from django.test import TestCase
 
-from dashboard.models import GeoPoint, Observation
+from dashboard.models import Commune, Observation
 from dashboard.views import ingest_observations
 
 TEST_JSON_DIRECTORY = "/tmp/test_json"  # or use Django's temp dirs
@@ -44,7 +44,7 @@ class IngestObservationsTest(TestCase):
         return path
 
     @patch("dashboard.views.JSON_DIRECTORY", TEST_JSON_DIRECTORY)
-    def test_create_geopoint_and_observation(self):
+    def test_create_commune_and_observation(self):
         content = {
             "type": "FeatureCollection",
             "date": "2025-04-03 09:30:01",
@@ -66,7 +66,7 @@ class IngestObservationsTest(TestCase):
 
         ingest_observations("test.geojson")
 
-        gp = GeoPoint.objects.get(insee_code="99999")
+        gp = Commune.objects.get(insee_code="99999")
         self.assertEqual(gp.name, "Testville")
         self.assertEqual(gp.population, 1234)
         self.assertAlmostEqual(gp.latitude, 45.95)
@@ -98,13 +98,13 @@ class IngestObservationsTest(TestCase):
         # Second run should not create duplicates
         ingest_observations("test.geojson")
 
-        self.assertEqual(GeoPoint.objects.count(), 1)
+        self.assertEqual(Commune.objects.count(), 1)
         self.assertEqual(Observation.objects.count(), 1)
 
     @patch("dashboard.views.JSON_DIRECTORY", TEST_JSON_DIRECTORY)
-    def test_log_diff_when_geopoint_exists(self):
-        # Create a GeoPoint with slightly different data
-        GeoPoint.objects.create(
+    def test_log_diff_when_commune_exists(self):
+        # Create a Commune with slightly different data
+        Commune.objects.create(
             name="Old Name",
             insee_code="99999",
             population=1000,

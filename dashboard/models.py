@@ -20,7 +20,18 @@ along with barometre.  If not, see <http://www.gnu.org/licenses/>.
 from django.db import models
 
 
-class GeoPoint(models.Model):
+class MapPoint(models.Model):
+    """A point feature on a fixed map (parking, incidents, etc.)."""
+
+    longitude = models.FloatField()
+    latitude = models.FloatField()
+    commune = models.CharField(max_length=10)  # INSEE code
+    epci = models.CharField(max_length=12)
+    departement = models.CharField(max_length=3)
+    region = models.CharField(max_length=3)
+
+
+class Commune(models.Model):
     """Represent a geography block."""
 
     name = models.CharField(max_length=255)
@@ -34,10 +45,10 @@ class GeoPoint(models.Model):
 
 
 class Observation(models.Model):
-    """Represent a observations thus far for a GeoPoint."""
+    """Represent a observations thus far for a Commune."""
 
-    geopoint = models.ForeignKey(
-        GeoPoint, on_delete=models.CASCADE, related_name="observations"
+    commune = models.ForeignKey(
+        Commune, on_delete=models.CASCADE, related_name="observations"
     )
     observed_at = models.DateTimeField()
     contribution_count = models.PositiveIntegerField()
@@ -45,22 +56,22 @@ class Observation(models.Model):
 
     def __str__(self):
         return (
-            f"Observation at {self.geopoint.name}"
+            f"Observation at {self.commune.name}"
             f" on {self.observed_at.strftime('%Y-%m-%d %H:%M:%S')}"
         )
 
 
 def Departement(code):
-    """Return a queryset of GeoPoints with given insee_code prefix
+    """Return a queryset of Communes with given insee_code prefix
 
-    Return a queryset of GeoPoints where the insee_code starts with
+    Return a queryset of Communes where the insee_code starts with
     the given department code.
 
     Parameters:
     code (int or str): Department code (e.g., 44, '2A', '971')
 
     Returns:
-    QuerySet: Filtered GeoPoints
+    QuerySet: Filtered Communes
 
     """
     if isinstance(code, int):
@@ -83,4 +94,4 @@ def Departement(code):
     ):
         raise ValueError(f"{code} is not a valid French department code")
 
-    return GeoPoint.objects.filter(insee_code__startswith=code_str)
+    return Commune.objects.filter(insee_code__startswith=code_str)

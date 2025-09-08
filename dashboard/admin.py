@@ -19,11 +19,23 @@ along with barometre.  If not, see <http://www.gnu.org/licenses/>.
 
 from django.contrib import admin
 
-from dashboard.models import GeoPoint, Observation
+from dashboard.models import Commune, MapPoint, Observation
 
 
-@admin.register(GeoPoint)
-class GeoPointAdmin(admin.ModelAdmin):
+@admin.register(MapPoint)
+class MapPointAdmin(admin.ModelAdmin):
+    list_display = (
+        "commune",
+        "epci",
+        "departement",
+        "region",
+        "longitude",
+        "latitude",
+    )
+
+
+@admin.register(Commune)
+class CommuneAdmin(admin.ModelAdmin):
     list_display = (
         "name",
         "insee_code",
@@ -38,12 +50,12 @@ class GeoPointAdmin(admin.ModelAdmin):
 @admin.register(Observation)
 class ObservationAdmin(admin.ModelAdmin):
     list_display = (
-        "geopoint",
+        "commune",
         "observed_at",
         "contribution_count",
         "percent",
     )
     list_filter = ("observed_at",)
-    search_fields = ("geopoint__name", "geopoint__insee_code")
-    autocomplete_fields = ["geopoint"]
+    search_fields = ("commune__name", "commune__insee_code")
+    autocomplete_fields = ["commune"]
     date_hierarchy = "observed_at"

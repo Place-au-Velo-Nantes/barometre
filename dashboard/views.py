@@ -28,7 +28,7 @@ from django.utils.timezone import make_aware
 from django.views.generic.edit import FormView
 
 from dashboard.forms import FilenameForm
-from dashboard.models import GeoPoint, Observation
+from dashboard.models import Commune, Observation
 
 # JSON_DIRECTORY = "/var/mobilitains/barometre/json/"
 JSON_DIRECTORY = "/home/jeff/barometre/"
@@ -41,7 +41,7 @@ def ingest_observations(filename):
 
     The file is assumed to live in JSON_DIRECTORY.
 
-    For each GeoPoint, make sure it exists.  If it doesn't, create it.
+    For each Commune, make sure it exists.  If it doesn't, create it.
     If it exists but isn't the same as the data we're reading, log the
     differences.
 
@@ -72,7 +72,7 @@ def ingest_observations(filename):
         geom = feature["geometry"]
         insee = props["insee"]
 
-        geopoint, created = GeoPoint.objects.get_or_create(
+        commune, created = Commune.objects.get_or_create(
             insee_code=insee,
             defaults={
                 "name": props["name"],
@@ -84,36 +84,34 @@ def ingest_observations(filename):
 
         if not created:
             diffs = []
-            if geopoint.name != props["name"]:
-                diffs.append(f"name: {geopoint.name} -> {props['name']}")
-            if geopoint.population != props["population"]:
+            if commune.name != props["name"]:
+                diffs.append(f"name: {commune.name} -> {props['name']}")
+            if commune.population != props["population"]:
                 diffs.append(
-                    f"population: {geopoint.population}"
+                    f"population: {commune.population}"
                     f" -> {props['population']}"
                 )
-            if round(geopoint.longitude, 6) != round(
-                geom["coordinates"][0], 6
-            ):
+            if round(commune.longitude, 6) != round(geom["coordinates"][0], 6):
                 diffs.append(
-                    f"longitude: {geopoint.longitude}"
+                    f"longitude: {commune.longitude}"
                     f" -> {geom['coordinates'][0]}"
                 )
-            if round(geopoint.latitude, 6) != round(geom["coordinates"][1], 6):
+            if round(commune.latitude, 6) != round(geom["coordinates"][1], 6):
                 diffs.append(
-                    f"latitude: {geopoint.latitude} ->"
+                    f"latitude: {commune.latitude} ->"
                     f" {geom['coordinates'][1]}"
                 )
             if diffs:
                 logger.info(
-                    f"GeoPoint {insee} differs from data: " + "; ".join(diffs)
+                    f"Commune {insee} differs from data: " + "; ".join(diffs)
                 )
 
         # Avoid inserting duplicates
         if not Observation.objects.filter(
-            geopoint=geopoint, observed_at=observed_at
+            commune=commune, observed_at=observed_at
         ).exists():
             Observation.objects.create(
-                geopoint=geopoint,
+                commune=commune,
                 observed_at=observed_at,
                 contribution_count=props["contributions"],
                 percent=props["per_cent"],
