@@ -19,11 +19,15 @@ along with barometre.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
 import os
+import unittest
+from pathlib import Path
 from unittest.mock import patch
 
+from django.conf import settings
+from django.core.management import call_command
 from django.test import TestCase
 
-from dashboard.models import Commune, Observation
+from dashboard.models import Commune, MapPoint, Observation
 from dashboard.views import ingest_observations
 
 TEST_JSON_DIRECTORY = "/tmp/test_json"  # or use Django's temp dirs
@@ -144,3 +148,25 @@ class IngestObservationsTest(TestCase):
         with self.assertLogs("django", level="WARNING") as cm:
             ingest_observations("test.geojson")
         self.assertIn("No date found", cm.output[0])
+
+
+try:
+    import zstandard  # noqa: F401
+except Exception:  # pragma: no cover - dependency missing
+    zstandard = None
+
+
+class ImportMapCommandTest(TestCase):
+    @unittest.skipUnless(zstandard, "zstandard library not installed")
+    def test_import_and_idempotency(self):
+        file_path = (
+            Path(settings.BASE_DIR)
+            / "data/2021/points_blancs-france-1000.geojson.zst"
+        )
+        call_command("importmap", str(file_path), "2021", "points_blancs")
+        count = MapPoint.objects.count()
+        self.assertGreater(count, 0)
+
+        # Second run should not import duplicates
+        call_command("importmap", str(file_path), "2021", "points_blancs")
+        self.assertEqual(MapPoint.objects.count(), count)
