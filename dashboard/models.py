@@ -23,6 +23,8 @@ from django.db import models
 class MapPoint(models.Model):
     """A point feature on a fixed map (parking, incidents, etc.)."""
 
+    year = models.CharField(max_length=4)
+    map_name = models.CharField(max_length=100)
     longitude = models.FloatField()
     latitude = models.FloatField()
     commune = models.CharField(max_length=10)  # INSEE code
@@ -34,6 +36,7 @@ class MapPoint(models.Model):
 class Commune(models.Model):
     """Represent a geography block."""
 
+    year = models.CharField(max_length=4)
     name = models.CharField(max_length=255)
     insee_code = models.CharField(max_length=10, unique=True)
     population = models.PositiveIntegerField()
